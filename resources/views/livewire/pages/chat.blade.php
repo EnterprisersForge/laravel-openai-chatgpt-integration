@@ -196,7 +196,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         <div
             class="mt-4 flex items-center space-x-2 bg-gray-800 p-3 rounded-lg fixed bottom-0 w-full max-w-3xl mx-auto">
             <form wire:submit="message" class="w-full flex items-center space-x-2">
-                <flux:input
+                <flux:textarea
                     wire:model="chat"
                     {{--                label="{{ __('Prompt Here') }}"--}}
                     type="text"
@@ -205,9 +205,10 @@ new #[Layout('components.layouts.app')] class extends Component {
                     autofocus
                     autocomplete="message"
                     placeholder="Prompt Here"
+                    rows="auto"
                 />
                 {{--            <input type="text" class="flex-1 p-3 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Type a message...">--}}
-                <flux:button variant="primary" type="submit" class="w-20" wire:loading.attr="disabled">{{ __('Send') }}</flux:button>
+                <flux:button variant="primary" type="submit" class="w-20 " wire:loading.attr="disabled">{{ __('Send') }}</flux:button>
             </form>
 
         </div>

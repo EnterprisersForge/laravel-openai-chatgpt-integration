@@ -15,7 +15,18 @@
             <flux:navlist variant="outline">
                 <flux:navlist.group heading="Platform" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                    <flux:navlist.item icon="home" :href="route('chat_page')" :current="request()->routeIs('chat_page')" wire:navigate>{{ __('Chat') }}</flux:navlist.item>
+                    <flux:navlist.item icon="chat-bubble-bottom-center-text" :href="route('chat_page')" :current="request()->routeIs('chat_page')" wire:navigate>{{ __('New Chat') }}</flux:navlist.item>
+
+                </flux:navlist.group>
+                <flux:navlist.group icon="chat-bubble-bottom-center-text" expandable heading="Chats" class="hidden lg:grid" :expanded="false">
+                    @php $chats=auth()->user()->conversations()->orderBy('id', 'desc')->get()->toArray();@endphp
+                    @forelse($chats as $chat)
+                        <flux:navlist.item :href="route('chat_page',$chat['id'])"
+                                           :current="request()->routeIs('chat_page')"
+                                           wire:navigate>{{ Str::substr($chat['title'],0,20) }} </flux:navlist.item>
+                    @empty
+                            <flux:navlist.item href="#" disabled>No Chats</flux:navlist.item>
+                    @endforelse
                 </flux:navlist.group>
             </flux:navlist>
 
