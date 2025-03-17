@@ -26,9 +26,10 @@ new #[Layout('components.layouts.app')] class extends Component {
             $chats = Auth::user()->conversations()->where('id', $this->chat_id)->first()?->messages()->get();
             if ($chats) {
                 foreach ($chats as $chat) {
+
                     $this->messages[$chat->id] = [
                         'user' => ($chat->sender == 'user'),
-                        'message' => $chat->content,
+                        'message' => $this->aiResponseFormatting($chat->content),
                         'tokens' => $chat->tokens_used
                     ];
                 }
@@ -36,7 +37,14 @@ new #[Layout('components.layouts.app')] class extends Component {
         }
 //        dd($this->messages);
     }
-
+    public  function aiResponseFormatting($text): array|string|null
+    {
+// Use preg_replace to find **word** and replace it with <strong>word</strong>
+        $text=e($text);
+//        $text = preg_replace('/\*\*(.+?)\*\*/', '<strong>$1</strong>', $text);
+        $text = preg_replace('/(?<!\*)\*\*(.*?)\*\*(?!\*)/', '<strong>$1</strong>', $text);
+        return nl2br($text);
+    }
     public function load_chats(): void
     {
         $this->chats = Auth::user()->conversations()->orderBy('id', 'desc')->get()->toArray();
@@ -104,7 +112,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         ]);
         $this->messages[$message->id] = [
             'user' => false,
-            'message' => $ai_response,
+            'message' => $this->aiResponseFormatting($ai_response),
             'tokens' => $usage['usage']['completion_tokens']
         ];
     }
@@ -126,12 +134,12 @@ new #[Layout('components.layouts.app')] class extends Component {
             <flux:navlist variant="outline">
                 <flux:navlist.group heading="Previous Chats" class="grid">
                     <flux:navlist.item icon="chat-bubble-bottom-center" :href="route('chat_page')"
-                                       :current="request()->routeIs('chat_page')"
+                                       :current="request()->routeIs('chat_page')&&!request()->route('chat_id')"
                                        wire:navigate>{{ __('New Chat') }}</flux:navlist.item>
                     @foreach($chats as $chat)
                         <div class="flex items-center justify-between mt-3 mb-3">
                             <flux:navlist.item icon="chat-bubble-bottom-center-text" :href="route('chat_page',$chat['id'])"
-                                               :current="request()->routeIs('chat_page')"
+                                               :current="request()->routeIs('chat_page')&& request()->route('chat_id') == $chat['id']"
                                                wire:navigate>{{ Str::substr($chat['title'],0,20) }} </flux:navlist.item>
                             <flux:button variant="danger" icon="x-mark" type="button" class="w-10 p-1" wire:click="delete_chat({{$chat['id']}})"  wire:confirm="Are you sure you want to delete this Chat?">{{ __('') }}</flux:button>
                         </div>
@@ -175,7 +183,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                                       d="M9.4 86.6C-3.1 74.1-3.1 53.9 9.4 41.4s32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L178.7 256 9.4 86.6zM256 416l288 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-288 0c-17.7 0-32-14.3-32-32s14.3-32 32-32z"/>
                             </svg>
                         </div>
-                        <div class="bg-gray-700 p-3 rounded-lg max-w-lg">{!! nl2br(e($message['message']))!!}<br><small>Token Used:{{$message['tokens']}}</small></div>
+                        <div class="bg-gray-700 p-3 rounded-lg max-w-lg">{!! ($message['message'])!!}<br><small>Token Used:{{$message['tokens']}}</small></div>
                     </div>
                 @endif
             @endforeach
